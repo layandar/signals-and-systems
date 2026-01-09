@@ -1,15 +1,18 @@
 # api.py
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from har_utils import HARPredictor
 import joblib
 import pandas as pd
 import numpy as np
-from io import StringIO
+from io import StringIO, BytesIO
 import traceback
 from scipy.signal import medfilt, butter, filtfilt
 from scipy.fft import rfft, rfftfreq
 from scipy.stats import skew, kurtosis
+import openpyxl
+from collections import Counter
 
 
 app = FastAPI(
@@ -26,6 +29,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 
 try:
@@ -177,46 +182,97 @@ def process_single_window(tAcc_window, gyro_window):
     
     return features_from_window(signals_win)
 
-@app.post("/predict")
-async def predict_activity(file: UploadFile = File(...)):
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"ok": True, "status": "running", "model_loaded": predictor is not None}
+
+def parse_file_content(contents: bytes, filename: str):
+    """Parse uploaded file content based on file extension"""
     try:
+        # Try Excel first if .xlsx
+        if filename.lower().endswith('.xlsx'):
+            df = pd.read_excel(BytesIO(contents), header=None)
+            return df
         
-        contents = await file.read()
-        
-        
+        # Try space-separated (common for .txt files)
         try:
-            
             data = pd.read_csv(StringIO(contents.decode()), delim_whitespace=True, header=None)
-            print("Loaded as space-separated file without headers")
+            return data
         except:
-            try:
-                #
-                data = pd.read_csv(StringIO(contents.decode()))
-                print("Loaded as CSV with headers")
-            except:
-                try:
-                    
-                    data = pd.read_csv(StringIO(contents.decode()), header=None)
-                    print("Loaded as CSV without headers")
-                except Exception as e:
-                    raise HTTPException(status_code=400, detail=f"Could not parse file: {str(e)}")
+            pass
         
-        print(f"File shape: {data.shape}")
-        print("First few rows:")
-        print(data.head(3))
+        # Try CSV with headers
+        try:
+            data = pd.read_csv(StringIO(contents.decode()))
+            return data
+        except:
+            pass
         
+        # Try CSV without headers
+        try:
+            data = pd.read_csv(StringIO(contents.decode()), header=None)
+            return data
+        except:
+            pass
         
-        if data.shape[1] != 6:
+        raise ValueError("Unable to parse file. Ensure it's a valid CSV, TXT, or XLSX file.")
+    
+    except Exception as e:
+        raise ValueError(f"File parsing error: {str(e)}")
+
+def compute_fft_preview(signal, fs=50, max_samples=500):
+    """Compute FFT for preview (limited samples for performance)"""
+    if len(signal) > max_samples:
+        signal = signal[:max_samples]
+    
+    N = len(signal)
+    fft_vals = rfft(signal * np.hanning(N))
+    magnitude = np.abs(fft_vals)
+    freqs = rfftfreq(N, 1/fs)
+    
+    return freqs.tolist(), magnitude.tolist()
+
+@app.post("/api/predict")
+async def predict_activity(file: UploadFile = File(...)):
+    """Main prediction endpoint"""
+    try:
+        # Validate file extension
+        allowed_extensions = ['.csv', '.txt', '.xlsx']
+        file_ext = '.' + file.filename.split('.')[-1].lower() if '.' in file.filename else ''
+        
+        if file_ext not in allowed_extensions:
             raise HTTPException(
                 status_code=400, 
-                detail=f"Expected 6 columns (acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z). Got {data.shape[1]} columns."
+                detail=f"Unsupported file type. Allowed: {', '.join(allowed_extensions)}"
             )
         
+        # Read file content
+        contents = await file.read()
         
+        # Check file size
+        if len(contents) > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"File too large. Maximum size: {MAX_FILE_SIZE / 1024 / 1024}MB"
+            )
+        
+        if len(contents) == 0:
+            raise HTTPException(status_code=400, detail="Empty file uploaded")
+        
+        # Parse file
+        data = parse_file_content(contents, file.filename)
+        
+        if data.shape[1] < 6:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Expected at least 6 columns (acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z). Got {data.shape[1]} columns."
+            )
+        
+        # Extract sensor data
         sensor_data = data.values
-        print(f"Sensor data shape: {sensor_data.shape}")
         
-        
+        # Window segmentation
         window_size = 128
         overlap = 64
         
@@ -226,80 +282,130 @@ async def predict_activity(file: UploadFile = File(...)):
         for i in range(0, len(sensor_data) - window_size + 1, window_size - overlap):
             window = sensor_data[i:i+window_size]
             acc_window = window[:, :3]  
-            gyro_window = window[:, 3:] 
+            gyro_window = window[:, 3:6]
             
             acc_windows.append(acc_window)
             gyro_windows.append(gyro_window)
         
-        print(f"Created {len(acc_windows)} windows")
+        if len(acc_windows) == 0:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Insufficient data. Need at least {window_size} samples."
+            )
         
-        
+        # Feature extraction
         features = []
-        for i, (acc_win, gyro_win) in enumerate(zip(acc_windows, gyro_windows)):
-            if i % 10 == 0:
-                print(f"Processing window {i+1}/{len(acc_windows)}")
-            
+        for acc_win, gyro_win in zip(acc_windows, gyro_windows):
             window_features = process_single_window(acc_win, gyro_win)
             features.append(window_features)
         
         features = np.array(features)
-        print(f"Final features shape: {features.shape}")
         
-        
+        # Validate feature dimensions
         if features.shape[1] != predictor.scaler.n_features_in_:
             raise HTTPException(
                 status_code=500, 
                 detail=f"Feature extraction error: Got {features.shape[1]} features, expected {predictor.scaler.n_features_in_}"
             )
         
-        
+        # Predict
         features = np.nan_to_num(features, nan=0.0)
         features_scaled = predictor.scaler.transform(features)
-        
-        
         predictions = predictor.model.predict(features_scaled)
         
+        # Get probabilities if available
+        probabilities_data = None
+        confidence_score = 0.0
         
         if hasattr(predictor.model, 'predict_proba'):
-            probabilities = predictor.model.predict_proba(features_scaled)
-            confidence_scores = np.max(probabilities, axis=1) * 100
-        else:
+            proba = predictor.model.predict_proba(features_scaled)
+            # Average probabilities across all windows
+            avg_proba = np.mean(proba, axis=0)
+            confidence_score = float(np.max(avg_proba))
             
-            confidence_scores = np.ones(len(predictions)) * 85
+            # Map to activity names
+            if hasattr(predictor, 'activity_mapping'):
+                class_labels = [predictor.activity_mapping.get(i, f"Activity_{i}") 
+                               for i in range(len(avg_proba))]
+                probabilities_data = {label: float(prob) for label, prob in zip(class_labels, avg_proba)}
         
-        
+        # Get activity names
         if hasattr(predictor, 'activity_mapping'):
-            if isinstance(predictor.activity_mapping, dict):
-                activity_names = [predictor.activity_mapping.get(pred, f"Unknown_{pred}") for pred in predictions]
-            else:
-                activity_names = [predictor.activity_mapping[pred] for pred in predictions]
+            activity_names = [predictor.activity_mapping.get(pred, f"Unknown_{pred}") 
+                            for pred in predictions]
         else:
             activity_names = [f"Activity_{pred}" for pred in predictions]
         
-        return {
-            "success": True,
-            "filename": file.filename,
-            "predictions": activity_names,
-            "confidence_scores": confidence_scores.tolist(),
-            "total_windows": len(predictions),
-            "message": "Analysis completed successfully"
+        # Determine most common activity
+        activity_counter = Counter(activity_names)
+        most_common_activity = activity_counter.most_common(1)[0][0]
+        
+        # Generate signal preview (first window)
+        preview_samples = min(256, len(sensor_data))
+        time_axis = (np.arange(preview_samples) / FS).tolist()
+        
+        signals_preview = {
+            "t": time_axis,
+            "acc_x": sensor_data[:preview_samples, 0].tolist(),
+            "acc_y": sensor_data[:preview_samples, 1].tolist(),
+            "acc_z": sensor_data[:preview_samples, 2].tolist(),
+            "gyro_x": sensor_data[:preview_samples, 3].tolist(),
+            "gyro_y": sensor_data[:preview_samples, 4].tolist(),
+            "gyro_z": sensor_data[:preview_samples, 5].tolist(),
         }
         
+        # Generate FFT preview
+        freq_x, mag_x = compute_fft_preview(sensor_data[:preview_samples, 0])
+        freq_y, mag_y = compute_fft_preview(sensor_data[:preview_samples, 1])
+        freq_z, mag_z = compute_fft_preview(sensor_data[:preview_samples, 2])
+        
+        fft_preview = {
+            "freq": freq_x,
+            "mag_acc_x": mag_x,
+            "mag_acc_y": mag_y,
+            "mag_acc_z": mag_z,
+        }
+        
+        # Metadata
+        meta = {
+            "samples": int(len(sensor_data)),
+            "channels": 6,
+            "sampling_rate": FS,
+            "windows_analyzed": len(predictions),
+            "filename": file.filename
+        }
+        
+        return {
+            "activity": most_common_activity,
+            "confidence": confidence_score,
+            "probabilities": probabilities_data,
+            "meta": meta,
+            "signals_preview": signals_preview,
+            "fft_preview": fft_preview,
+            "all_predictions": activity_names,
+            "prediction_distribution": dict(activity_counter)
+        }
+        
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Error details: {str(e)}")
+        print(f"Error: {str(e)}")
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 
 @app.get("/")
 async def root():
-    return {"message": "HAR API is running!"}
+    return {"message": "HAR API is running!", "version": "2.0.0"}
 
-@app.get("/activities")
+@app.get("/api/activities")
 async def get_activities():
-    return {
-        "activities": predictor.activity_mapping,
-        "available_activities": list(predictor.activity_mapping.values())
-    }
+    """Get available activity labels"""
+    if hasattr(predictor, 'activity_mapping'):
+        return {
+            "activities": predictor.activity_mapping,
+            "available_activities": list(predictor.activity_mapping.values())
+        }
+    return {"activities": {}, "available_activities": []}
 
 if __name__ == "__main__":
     import uvicorn
