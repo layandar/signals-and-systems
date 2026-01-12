@@ -1,280 +1,266 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Activity, BarChart3, Zap, Brain, Database, ArrowLeft, Sparkles, Code } from 'lucide-react';
+import { Activity, BarChart3, Zap, Brain, Database, ArrowLeft, Sparkles, Code, Target, Cpu } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const AboutPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <Navbar />
+    <div className="min-h-screen bg-gray-900 relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 animated-grid opacity-20" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-900/50 to-gray-900" />
+      <div className="absolute top-20 left-10 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+      
+      <div className="relative z-10">
+        <Navbar />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Link
-            to="/"
-            className="inline-flex items-center space-x-2 text-gray-600 hover:text-primary-600 mb-8 transition-all duration-200 group"
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-semibold">Back to Upload</span>
-          </Link>
-        </motion.div>
-
-        <motion.div 
-          className="card-gradient"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <div className="text-center mb-8">
-            <motion.div
-              className="inline-flex items-center justify-center p-4 bg-gradient-to-br from-primary-500 to-purple-500 rounded-2xl mb-4 shadow-xl"
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            <Link
+              to="/"
+              className="inline-flex items-center space-x-2 text-gray-400 hover:text-cyan-400 mb-8 transition-all duration-200 group"
             >
-              <Sparkles className="h-10 w-10 text-white" />
-            </motion.div>
-            <h1 className="text-5xl font-extrabold mb-4">
-              <span className="text-gradient">About HAR System</span>
-            </h1>
-          </div>
+              <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+              <span className="font-semibold">Back to Upload</span>
+            </Link>
+          </motion.div>
 
-          <div className="prose prose-blue max-w-none">
-            <p className="text-xl text-gray-700 mb-8 leading-relaxed text-center">
-              The Human Activity Recognition (HAR) System is a sophisticated machine learning application
-              that analyzes IMU (Inertial Measurement Unit) sensor data to identify and classify human activities
-              in real-time.
-            </p>
-
-            <h2 className="text-3xl font-bold text-gray-900 mt-10 mb-6">How It Works</h2>
-            
-            <div className="grid md:grid-cols-2 gap-6 mb-10">
-              <motion.div 
-                className="feature-card"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
+          <motion.div 
+            className="glass-card mb-8"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <div className="text-center mb-8">
+              <motion.div
+                className="inline-flex items-center justify-center p-4 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-3xl mb-6 shadow-2xl shadow-cyan-500/50"
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               >
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="p-2 bg-primary-500 rounded-lg">
-                    <Database className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-lg">Data Collection</h3>
-                </div>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  The system processes 6-axis IMU data containing 3-axis accelerometer and 
-                  3-axis gyroscope readings at 50Hz sampling rate.
-                </p>
+                <Sparkles className="h-12 w-12 text-white" />
               </motion.div>
-
-              <motion.div 
-                className="feature-card"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="p-2 bg-purple-500 rounded-lg">
-                    <Zap className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-lg">Signal Processing</h3>
-                </div>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  Advanced filtering techniques separate body acceleration from gravity, 
-                  and compute derived signals like jerk and magnitude.
-                </p>
-              </motion.div>
-
-              <motion.div 
-                className="feature-card"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="p-2 bg-green-500 rounded-lg">
-                    <BarChart3 className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-lg">Feature Extraction</h3>
-                </div>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  Extracts time-domain features (mean, std, entropy) and frequency-domain features 
-                  (FFT, power spectral density) from windowed segments.
-                </p>
-              </motion.div>
-
-              <motion.div 
-                className="feature-card"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="p-2 bg-orange-500 rounded-lg">
-                    <Brain className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-lg">ML Classification</h3>
-                </div>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  A trained Support Vector Machine (SVM) classifier predicts activities with 
-                  high accuracy and provides confidence scores.
-                </p>
-              </motion.div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4">
+                <span className="text-gradient">About HAR System</span>
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed px-4">
+                Advanced machine learning application for real-time human activity recognition using IMU sensor data
+              </p>
             </div>
 
-            <h2 className="text-3xl font-bold text-gray-900 mt-10 mb-6">Technical Pipeline</h2>
-            
-            <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-8 rounded-2xl border-2 border-gray-300 mb-10 shadow-md">
-              <ol className="space-y-4 text-gray-800">
-                <li className="flex items-start space-x-4">
-                  <span className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-md">1</span>
-                  <div>
-                    <span className="font-bold text-lg">Window Segmentation:</span> 
-                    <p className="text-gray-700 mt-1">Data is divided into 2.56s windows (128 samples) with 50% overlap</p>
-                  </div>
-                </li>
-                <li className="flex items-start space-x-4">
-                  <span className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-md">2</span>
-                  <div>
-                    <span className="font-bold text-lg">Signal Decomposition:</span>
-                    <p className="text-gray-700 mt-1">Butterworth low-pass filter separates gravity from body acceleration</p>
-                  </div>
-                </li>
-                <li className="flex items-start space-x-4">
-                  <span className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-md">3</span>
-                  <div>
-                    <span className="font-bold text-lg">Derived Signals:</span>
-                    <p className="text-gray-700 mt-1">Compute jerk (time derivative) and magnitude for all signals</p>
-                  </div>
-                </li>
-                <li className="flex items-start space-x-4">
-                  <span className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-md">4</span>
-                  <div>
-                    <span className="font-bold text-lg">Feature Engineering:</span>
-                    <p className="text-gray-700 mt-1">Extract 561 features per window including statistical, spectral, and AR coefficients</p>
-                  </div>
-                </li>
-                <li className="flex items-start space-x-4">
-                  <span className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-pink-500 to-pink-600 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-md">5</span>
-                  <div>
-                    <span className="font-bold text-lg">Normalization:</span>
-                    <p className="text-gray-700 mt-1">Apply standard scaling using pre-fitted scaler parameters</p>
-                  </div>
-                </li>
-                <li className="flex items-start space-x-4">
-                  <span className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-md">6</span>
-                  <div>
-                    <span className="font-bold text-lg">Classification:</span>
-                    <p className="text-gray-700 mt-1">SVM model predicts activity class and confidence probabilities</p>
-                  </div>
-                </li>
-              </ol>
-            </div>
+            <div className="prose prose-invert max-w-none">
+              <p className="text-lg text-gray-300 mb-8 leading-relaxed">
+                The Human Activity Recognition (HAR) System leverages sophisticated signal processing and machine learning techniques
+                to analyze Inertial Measurement Unit (IMU) sensor data, enabling accurate identification and classification of human activities
+                in real-time with high confidence scores.
+              </p>
 
-            <h2 className="text-3xl font-bold text-gray-900 mt-10 mb-6">Supported Activities</h2>
-            
-            <div className="grid md:grid-cols-3 gap-4 mb-10">
-              {['Walking', 'Walking Upstairs', 'Walking Downstairs', 'Sitting', 'Standing', 'Laying'].map((activity, index) => (
-                <motion.div 
-                  key={activity} 
-                  className="flex items-center space-x-3 bg-white p-4 rounded-xl border-2 border-primary-200 shadow-sm hover:shadow-lg hover:border-primary-400 transition-all duration-200"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.05 }}
-                >
-                  <div className="p-2 bg-primary-100 rounded-lg">
-                    <Activity className="h-5 w-5 text-primary-600" />
-                  </div>
-                  <span className="text-gray-800 font-semibold">{activity}</span>
-                </motion.div>
-              ))}
-            </div>
-
-            <h2 className="text-3xl font-bold text-gray-900 mt-10 mb-6">Technology Stack</h2>
-            
-            <div className="bg-gradient-to-br from-gray-50 to-blue-50 p-8 rounded-2xl border-2 border-gray-300 shadow-md">
-              <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="p-2 bg-green-500 rounded-lg">
-                      <Code className="h-6 w-6 text-white" />
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mt-10 mb-6 flex items-center space-x-3">
+                <Cpu className="h-6 w-6 sm:h-8 sm:w-8 text-cyan-400" />
+                <span>How It Works</span>
+              </h2>
+              
+              <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-10">
+                {[
+                  {
+                    icon: Database,
+                    title: 'Data Collection',
+                    desc: 'The system processes 6-axis IMU data containing 3-axis accelerometer and 3-axis gyroscope readings at 50Hz sampling rate.',
+                    color: 'from-cyan-500 to-blue-600',
+                  },
+                  {
+                    icon: Zap,
+                    title: 'Signal Processing',
+                    desc: 'Advanced filtering techniques separate body acceleration from gravity, and compute derived signals like jerk and magnitude.',
+                    color: 'from-purple-500 to-pink-600',
+                  },
+                  {
+                    icon: BarChart3,
+                    title: 'Feature Extraction',
+                    desc: 'Extracts time-domain features (mean, std, entropy) and frequency-domain features (FFT, power spectral density) from windowed segments.',
+                    color: 'from-green-500 to-emerald-600',
+                  },
+                  {
+                    icon: Brain,
+                    title: 'ML Classification',
+                    desc: 'A trained Support Vector Machine (SVM) classifier predicts activities with high accuracy and provides confidence scores.',
+                    color: 'from-orange-500 to-red-600',
+                  },
+                ].map((feature, index) => (
+                  <motion.div 
+                    key={feature.title}
+                    className="bg-gray-800/50 backdrop-blur-xl p-6 rounded-2xl border border-gray-700/50 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 + index * 0.1 }}
+                    whileHover={{ scale: 1.03, y: -5 }}
+                  >
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className={`p-3 bg-gradient-to-br ${feature.color} rounded-xl shadow-lg`}>
+                        <feature.icon className="h-6 w-6 text-white" />
+                      </div>
+                      <h3 className="font-bold text-white text-lg">{feature.title}</h3>
                     </div>
-                    <h3 className="font-bold text-gray-900 text-xl">Backend</h3>
-                  </div>
-                  <ul className="space-y-2 text-sm text-gray-700">
+                    <p className="text-sm text-gray-400 leading-relaxed">
+                      {feature.desc}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+
+              <h2 className="text-3xl font-bold text-white mt-10 mb-6 flex items-center space-x-3">
+                <Target className="h-8 w-8 text-cyan-400" />
+                <span>Technical Pipeline</span>
+              </h2>
+              
+              <div className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-xl p-8 rounded-2xl border border-gray-700/50 mb-10 shadow-xl">
+                <ol className="space-y-5 text-gray-300">
+                  {[
+                    {
+                      title: 'Window Segmentation',
+                      desc: 'Data is divided into 2.56s windows (128 samples) with 50% overlap',
+                      color: 'from-cyan-500 to-blue-600',
+                    },
+                    {
+                      title: 'Signal Decomposition',
+                      desc: 'Butterworth low-pass filter separates gravity from body acceleration',
+                      color: 'from-purple-500 to-pink-600',
+                    },
+                    {
+                      title: 'Derived Signals',
+                      desc: 'Compute jerk (time derivative) and magnitude for all signals',
+                      color: 'from-green-500 to-emerald-600',
+                    },
+                    {
+                      title: 'Feature Engineering',
+                      desc: 'Extract 561-dimensional feature vector including statistical and spectral features',
+                      color: 'from-orange-500 to-red-600',
+                    },
+                    {
+                      title: 'Model Inference',
+                      desc: 'SVM classifier processes features and outputs activity predictions with probabilities',
+                      color: 'from-pink-500 to-rose-600',
+                    },
+                  ].map((step, index) => (
+                    <motion.li 
+                      key={index}
+                      className="flex items-start space-x-4"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.5 + index * 0.1 }}
+                    >
+                      <span className={`flex-shrink-0 w-10 h-10 bg-gradient-to-br ${step.color} text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-lg`}>
+                        {index + 1}
+                      </span>
+                      <div className="flex-1">
+                        <span className="font-bold text-lg text-white">{step.title}</span>
+                        <p className="text-gray-400 mt-1">{step.desc}</p>
+                      </div>
+                    </motion.li>
+                  ))}
+                </ol>
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mt-10 mb-6 flex items-center space-x-3">
+                <Activity className="h-6 w-6 sm:h-8 sm:w-8 text-cyan-400" />
+                <span>Supported Activities</span>
+              </h2>
+              
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-10">
+                {[
+                  'Walking',
+                  'Jogging',
+                  'Sitting',
+                  'Standing',
+                  'Upstairs',
+                  'Downstairs',
+                ].map((activity, index) => (
+                  <motion.div
+                    key={activity}
+                    className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-xl border border-cyan-500/30 rounded-xl p-4 text-center hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.8 + index * 0.05 }}
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <span className="text-white font-semibold">{activity}</span>
+                  </motion.div>
+                ))}
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mt-10 mb-6 flex items-center space-x-3">
+                <Code className="h-6 w-6 sm:h-8 sm:w-8 text-cyan-400" />
+                <span>Technology Stack</span>
+              </h2>
+              
+              <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-10">
+                <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-xl p-6">
+                  <h3 className="font-bold text-white text-lg mb-4">Frontend</h3>
+                  <ul className="space-y-2 text-gray-400">
                     <li className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
-                      <span>FastAPI - Modern Python web framework</span>
+                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                      <span>React 18 + Vite</span>
                     </li>
                     <li className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
-                      <span>scikit-learn - ML model (SVM)</span>
+                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                      <span>Tailwind CSS</span>
                     </li>
                     <li className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
-                      <span>scipy - Signal processing & FFT</span>
+                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                      <span>Framer Motion</span>
                     </li>
                     <li className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
-                      <span>pandas - Data manipulation</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
-                      <span>NumPy - Numerical computing</span>
+                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                      <span>Recharts</span>
                     </li>
                   </ul>
                 </div>
-                
-                <div>
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="p-2 bg-blue-500 rounded-lg">
-                      <Activity className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="font-bold text-gray-900 text-xl">Frontend</h3>
-                  </div>
-                  <ul className="space-y-2 text-sm text-gray-700">
+
+                <div className="bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-xl p-6">
+                  <h3 className="font-bold text-white text-lg mb-4">Backend</h3>
+                  <ul className="space-y-2 text-gray-400">
                     <li className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
-                      <span>React 18 - UI framework</span>
+                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                      <span>Python + FastAPI</span>
                     </li>
                     <li className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
-                      <span>Tailwind CSS - Styling</span>
+                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                      <span>Scikit-learn</span>
                     </li>
                     <li className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
-                      <span>Recharts - Data visualization</span>
+                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                      <span>NumPy & SciPy</span>
                     </li>
                     <li className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
-                      <span>React Router - Navigation</span>
-                    </li>
-                    <li className="flex items-center space-x-2">
-                      <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
-                      <span>Vite - Build tool</span>
+                      <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                      <span>Pandas</span>
                     </li>
                   </ul>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-8 p-8 bg-gradient-to-r from-primary-50 to-purple-50 border-2 border-primary-300 rounded-2xl shadow-lg">
-              <div className="flex items-start space-x-4">
-                <div className="p-3 bg-primary-500 rounded-xl shadow-md">
-                  <Database className="h-7 w-7 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-3 text-xl">Dataset Information</h3>
-                  <p className="text-sm text-gray-700 leading-relaxed">
-                    This system is trained on the UCI HAR Dataset, which contains recordings of 30 subjects 
-                    performing activities of daily living while carrying a smartphone with embedded inertial sensors.
-                    The model achieves high accuracy through sophisticated feature engineering and SVM classification.
-                  </p>
-                </div>
+              <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border-2 border-cyan-500/30 rounded-2xl p-6 backdrop-blur-xl">
+                <h3 className="text-xl font-bold text-white mb-3 flex items-center space-x-2">
+                  <Sparkles className="h-6 w-6 text-cyan-400" />
+                  <span>Academic Project</span>
+                </h3>
+                <p className="text-gray-300 leading-relaxed">
+                  This system was developed as part of a Signals & Systems course project, demonstrating
+                  practical applications of digital signal processing, frequency analysis, and machine learning
+                  in real-world scenarios. The project showcases the integration of theoretical concepts
+                  with modern web technologies to create an interactive, user-friendly application.
+                </p>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
+
+        <Footer />
       </div>
     </div>
   );
